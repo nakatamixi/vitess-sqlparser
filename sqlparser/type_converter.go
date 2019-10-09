@@ -35,10 +35,22 @@ func convertFromCreateTableStmt(stmt *ast.CreateTableStmt, ddl *DDL) Statement {
 		for _, key := range constraint.Keys {
 			keys = append(keys, NewColIdent(key.Column.Name.String()))
 		}
+		var ref *Reference
+		if constraint.Refer != nil {
+			refKeys := []ColIdent{}
+			for _, key := range constraint.Refer.IndexColNames {
+				refKeys = append(refKeys, NewColIdent(key.Column.Name.String()))
+			}
+			ref = &Reference{
+				Name: constraint.Refer.Table.Name.String(),
+				Keys: refKeys,
+			}
+		}
 		constraints = append(constraints, &Constraint{
-			Type: ConstraintType(constraint.Tp),
-			Name: constraint.Name,
-			Keys: keys,
+			Type:      ConstraintType(constraint.Tp),
+			Name:      constraint.Name,
+			Keys:      keys,
+			Reference: ref,
 		})
 	}
 	options := []*TableOption{}

@@ -944,6 +944,12 @@ type Constraint struct {
 	Type ConstraintType
 	Name string
 	// Used for PRIMARY KEY, UNIQUE, ......
+	Keys      []ColIdent
+	Reference *Reference
+}
+
+type Reference struct {
+	Name string
 	Keys []ColIdent
 }
 
@@ -956,7 +962,15 @@ func (node Constraint) String() string {
 	if node.Name != "" {
 		name = fmt.Sprintf("`%s`", node.Name)
 	}
-	return fmt.Sprintf("%s %s (%s)", node.Type.String(), name, strings.Join(keys, ", "))
+	ref := ""
+	if node.Reference != nil {
+		refKeys := []string{}
+		for _, key := range node.Reference.Keys {
+			refKeys = append(refKeys, fmt.Sprintf("`%v`", key))
+		}
+		ref = fmt.Sprintf(" REFERENCES %s (%s)", node.Reference.Name, strings.Join(refKeys, ", "))
+	}
+	return fmt.Sprintf("%s %s (%s)%s", node.Type.String(), name, strings.Join(keys, ", "), ref)
 }
 
 // ColumnOptionType is the type for ColumnOption.
