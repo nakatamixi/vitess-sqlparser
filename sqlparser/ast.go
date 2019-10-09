@@ -915,6 +915,7 @@ const (
 	ConstraintUniqIndex
 	ConstraintForeignKey
 	ConstraintFulltext
+	ConstraintInterleave
 )
 
 func (t ConstraintType) String() string {
@@ -935,6 +936,8 @@ func (t ConstraintType) String() string {
 		return "FOREIGN KEY"
 	case ConstraintFulltext:
 		return "FULLTEXT"
+	case ConstraintInterleave:
+		return "INTERLEAVE IN PARENT"
 	}
 	return ""
 }
@@ -958,6 +961,10 @@ func (node Constraint) String() string {
 	for _, key := range node.Keys {
 		keys = append(keys, fmt.Sprintf("`%v`", key))
 	}
+	keysStr := ""
+	if len(keys) > 0 {
+		keysStr = fmt.Sprintf("(%s)", strings.Join(keys, ", "))
+	}
 	name := ""
 	if node.Name != "" {
 		name = fmt.Sprintf("`%s`", node.Name)
@@ -970,7 +977,11 @@ func (node Constraint) String() string {
 		}
 		ref = fmt.Sprintf(" REFERENCES %s (%s)", node.Reference.Name, strings.Join(refKeys, ", "))
 	}
-	return fmt.Sprintf("%s %s (%s)%s", node.Type.String(), name, strings.Join(keys, ", "), ref)
+	options := ""
+	if node.Type == ConstraintInterleave {
+		options = "ON DELETE CASCADE"
+	}
+	return fmt.Sprintf("%s %s %s%s %s", node.Type.String(), name, keysStr, ref, options)
 }
 
 // ColumnOptionType is the type for ColumnOption.
