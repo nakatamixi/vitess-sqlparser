@@ -663,6 +663,30 @@ func (t *CreateTable) Format(buf *TrackedBuffer) {
 	}
 }
 
+func (t *CreateTable) SpannerFormat(buf *TrackedBuffer) {
+	columns := []string{}
+	for _, column := range t.Columns {
+		columns = append(columns, column.String())
+	}
+	column := strings.Join(columns, ",\n\t")
+	constraintStr := ""
+	if len(t.Constraints) > 0 {
+		constraints := []string{}
+		for _, constraint := range t.Constraints {
+			constraints = append(constraints, constraint.String())
+		}
+		constraintStr = strings.Join(constraints, ",\n")
+	}
+
+	if column != "" {
+		text := fmt.Sprintf("CREATE TABLE `%v` (\n\t%s\n) %s", t.NewName.Name, column, constraintStr)
+		buf.Myprintf("%s", text)
+	} else {
+		text := fmt.Sprintf("CREATE TABLE `%v`", t.NewName.Name)
+		buf.Myprintf("%s", text)
+	}
+}
+
 // DDL strings.
 const (
 	CreateStr = "create"
