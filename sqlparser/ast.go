@@ -1001,11 +1001,7 @@ func (node Constraint) String() string {
 		}
 		ref = fmt.Sprintf(" REFERENCES %s (%s)", node.Reference.Name, strings.Join(refKeys, ", "))
 	}
-	options := ""
-	if node.Type == ConstraintInterleave {
-		options = "ON DELETE CASCADE"
-	}
-	return fmt.Sprintf("%s %s %s%s %s", node.Type.String(), name, keysStr, ref, options)
+	return fmt.Sprintf("%s %s %s%s", node.Type.String(), name, keysStr, ref)
 }
 
 // ColumnOptionType is the type for ColumnOption.
